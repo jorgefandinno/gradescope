@@ -254,13 +254,84 @@ import datetime
 
 
 def get_course_assignment_settings(course_id, assignment_id):
-    # NOTE: remove "/assignments" for only active assignments?
-    result = gradescope.api.request(endpoint=f"courses/{course_id}/assignments/{assignment_id}/edit")
-    soup = _bs4.BeautifulSoup(result.content.decode(), features="html.parser")
+    response = gradescope.api.request(endpoint=f"courses/{course_id}/assignments/{assignment_id}/edit")
+    soup = _bs4.BeautifulSoup(response.content.decode(), features="html.parser")
     dates_div = soup.find("div", {"id": "assignment-form-dates-and-submission-format"}).findChildren("div", {"data-react-class": "SetupDueDateFormGroup"})
     raw_dates = json.loads(dates_div[0].attrs["data-react-props"])
     dates = {
         "dueDate": datetime.datetime.strptime(raw_dates["dueDate"], "%Y-%m-%dT%H:%M"),
         "hardDueDate": datetime.datetime.strptime(raw_dates["hardDueDate"], "%Y-%m-%dT%H:%M"),
     }
-    pprint(dates)
+    return dates
+
+
+def set_course_assignment_settings(course_id, assignment_id):
+    response = gradescope.api.request(endpoint=f"courses/{course_id}/assignments/{assignment_id}/edit")
+    soup = _bs4.BeautifulSoup(response.content.decode(), features="html.parser")
+    authenticity_token = soup.find("input", {"name": "authenticity_token"})
+    print(authenticity_token)
+
+    # # payload = _collections.OrderedDict()
+    # # payload["utf8"] = "✓"
+    # # payload["_method"] = "patch"
+    # # payload["authenticity_token"] = "tXaWM19Hra+HOICsVFUHFAcxpFTUXeU/JtjY7OW3Bc44dfbr7NAaGz9OgXCPBnvVf0HalqQ8ML++BJm9yzGDdA=="
+    # # payload["assignment[due_date_string]"] = "2000-09-27T14:29"
+    # # payload["assignment[title]"] = "Project 1"
+    # # payload["assignment[total_points]"] = "100.0"
+    # # payload["assignment[submissions_anonymized]"] = "0"
+    # # payload["assignment[release_date_string]"] = "2023-09-13T14:29"
+    # # payload["assignment[due_date_string]"] = "2023-09-27T14:29"
+    # # payload["assignment[allow_late_submissions]"] = "0"
+    # # payload["assignment[group_submission]"] = "0"
+    # # payload["assignment[group_submission]"] = "1"
+    # # payload["assignment[group_size]"] = "2"
+    # # payload["assignment[manual_grading]"] = "0"
+    # # payload["assignment[rubric_visibility_setting]"] = "show_all_rubric_items"
+    # # payload["assignment[leaderboard_enabled]"] = "0"
+    # # payload["assignment[leaderboard_enabled]"] = "1"
+    # # payload["assignment[leaderboard_max_entries]"] = ""
+    # # payload["assignment[submission_methods[upload]]"] = "0"
+    # # payload["assignment[submission_methods[upload]]"] = "1"
+    # # payload["assignment[submission_methods[github]]"] = "0"
+    # # payload["assignment[submission_methods[github]]"] = "1"
+    # # payload["assignment[submission_methods[bitbucket]]"] = "0"
+    # # payload["assignment[submission_methods[bitbucket]]"] = "1"
+    # # payload["assignment[ignored_files]"] = ""
+    # # payload["assignment[memory_limit]"] = "768"
+    # # payload["assignment[autograder_timeout]"] = "600"
+    # # payload["commit"] = "Save"
+
+    # response = gradescope.api.request(
+    #     endpoint=f"courses/{course_id}/assignments/{assignment_id}",
+    #     data=payload,
+    #     )
+    # return response.status_code == 200
+
+# utf8: ✓
+# _method: patch
+# authenticity_token: tXaWM19Hra+HOICsVFUHFAcxpFTUXeU/JtjY7OW3Bc44dfbr7NAaGz9OgXCPBnvVf0HalqQ8ML++BJm9yzGDdA==
+# assignment[type]"] = ProgrammingAssignment
+# assignment[title]: Minicontest 1a
+# assignment[total_points]: 100.0
+# assignment[submissions_anonymized]: 0
+# assignment[release_date_string]: 2023-09-13T14:29
+# assignment[due_date_string]: 2023-09-27T14:29
+# assignment[allow_late_submissions]: 0
+# assignment[group_submission]: 0
+# assignment[group_submission]: 1
+# assignment[group_size]: 2
+# assignment[manual_grading]: 0
+# assignment[rubric_visibility_setting]: show_all_rubric_items
+# assignment[leaderboard_enabled]: 0
+# assignment[leaderboard_enabled]: 1
+# assignment[leaderboard_max_entries]: 
+# assignment[submission_methods[upload]]: 0
+# assignment[submission_methods[upload]]: 1
+# assignment[submission_methods[github]]: 0
+# assignment[submission_methods[github]]: 1
+# assignment[submission_methods[bitbucket]]: 0
+# assignment[submission_methods[bitbucket]]: 1
+# assignment[ignored_files]: 
+# assignment[memory_limit]: 768
+# assignment[autograder_timeout]: 600
+# commit: Save
