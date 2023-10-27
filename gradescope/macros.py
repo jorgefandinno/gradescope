@@ -248,4 +248,19 @@ def get_course_grades(course_id, only_graded=True, use_email=True):
 
     return grades
 
+from pprint import pprint
+import json
+import datetime
 
+
+def get_course_assignment_settings(course_id, assignment_id):
+    # NOTE: remove "/assignments" for only active assignments?
+    result = gradescope.api.request(endpoint=f"courses/{course_id}/assignments/{assignment_id}/edit")
+    soup = _bs4.BeautifulSoup(result.content.decode(), features="html.parser")
+    dates_div = soup.find("div", {"id": "assignment-form-dates-and-submission-format"}).findChildren("div", {"data-react-class": "SetupDueDateFormGroup"})
+    raw_dates = json.loads(dates_div[0].attrs["data-react-props"])
+    dates = {
+        "dueDate": datetime.datetime.strptime(raw_dates["dueDate"], "%Y-%m-%dT%H:%M"),
+        "hardDueDate": datetime.datetime.strptime(raw_dates["hardDueDate"], "%Y-%m-%dT%H:%M"),
+    }
+    pprint(dates)
