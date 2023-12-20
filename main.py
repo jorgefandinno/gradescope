@@ -19,13 +19,15 @@ PROJECT_SLIP_DAYS = 2
 MIDTERM_AVALIABLE_TIME = { "hour": 13, "minute": 30 }
 MIDTERM_LENGHT = datetime.timedelta(hours=1, minutes=15)
 
+# Specify the path to your Excel file
+EXECEL_FILE_PATH = "schedule_ai_spring_2024.xlsx"
 
 
 # Specify the path to your Excel file
 
 # ExcelAssigment  = namedtuple("Assigment", "name, due_date")
 
-def read_assigments_from_excel(excel_file_path):
+def read_schedule(excel_file_path):
     # Read the Excel file into a DataFrame
     df = pd.read_excel(excel_file_path)
 
@@ -35,7 +37,7 @@ def read_assigments_from_excel(excel_file_path):
     # Iterate over all rows and collect/transform the content of the columns
     for _, row in df.iterrows():
         due_date = pd.to_datetime(row.iloc[0])
-        for col in {2, 5, 6, 7, 8}:
+        for col in range(1,9):
             name = row.iloc[col]
             if isinstance(name, str):
                 name = name.strip().replace(" ","")
@@ -43,6 +45,11 @@ def read_assigments_from_excel(excel_file_path):
                     assigments[name] = due_date
                 elif name.startswith("Exam") or name.startswith("Midterm"):
                     assigments[name] = pd.to_datetime(row.iloc[col-1])
+                else:
+                    matches = re.findall(r"T\d+:", name)
+                    if len(matches) > 0:
+                        key = matches[0].replace("T", "Topic #").replace(":","")
+                        assigments[key] = pd.to_datetime(row.iloc[col-1])
         # name1 = row.iloc[6]
         # name2 = row.iloc[7]
         # if isinstance(name1, str):
@@ -106,13 +113,16 @@ def _cavas_assigment_from_gradescope(gradescope_assigment):
 def gradescope_and_canvas_assigments(assigments, relese_date=RELESE_DATE):
     gradescope_assigments = {}
     canvas_assigments = {}
+    canvas_modules = {}
     for assigment_name, due_date in assigments.items():
         if assigment_name.startswith("HW") or assigment_name.startswith("Project"):
             gradescope_assigments[assigment_name] =  _gradescope_assigment(assigment_name, due_date, relese_date)
             canvas_assigments[assigment_name] = _cavas_assigment_from_gradescope(gradescope_assigments[assigment_name])
         elif assigment_name.startswith("Exam") or assigment_name.startswith("Midterm") or assigment_name.startswith("RD"):
             canvas_assigments[assigment_name] = _cavas_assigment(assigment_name, due_date, relese_date=RELESE_DATE)
-    return gradescope_assigments, canvas_assigments
+        elif assigment_name.startswith("Topic"):
+            canvas_modules[assigment_name] = due_date
+    return gradescope_assigments, canvas_assigments, canvas_modules
 
 
 def set_gradescope_due_dates(course, gradescope_assigments):
@@ -161,11 +171,12 @@ def set_gradescope_due_dates(course, gradescope_assigments):
     # # print(assiment_settings)
             
 
-def set_canvas_due_dates(canvas_assigments):
+def set_canvas_due_dates(canvas_assigments, canvas_modules):
     print(f"Logging ...")
     canvas = Canvas(API_URL, ACCESS_TOKEN)
     course = canvas.get_course(COURSE_ID)
     assignments = course.get_assignments()
+    modules = course.get_modules()
     readings_count = 1
     for assignment in assignments:
         key = re.sub("[\(\[].*?[\)\]]", "", assignment.name)
@@ -177,6 +188,21 @@ def set_canvas_due_dates(canvas_assigments):
         if key in canvas_assigments:
             print(f"Updating {assignment.name} ...")
             assignment.edit(assignment=canvas_assigments[key])
+
+    for module in modules:
+        module_name_splitted = module.name.split("|")
+        if len(module_name_splitted) > 1:
+            module_name = module_name_splitted[0].strip()
+            module_name_splitted = module_name.split(":")
+            if len(module_name_splitted) > 1:
+                topic = module_name_splitted[0].strip()
+                module_name = module_name_splitted[1].strip()
+                if topic in canvas_modules:
+                    new_name = f"{topic}: {module_name} | {canvas_modules[topic].strftime('%b %d')}"
+                    print(f"Updating name of '{module.name}' to '{new_name}' ...")
+                    module.edit(module={'name': new_name})
+        # print(name)
+
             # print(f"Updated assignment: {assignment.name}, New Due Date: {canvas_assigments[assignment.name]['due_date']}")
         # Get the current due date
         # current_due_date = datetime.strptime(assignment.due_at, "%Y-%m-%dT%H:%M:%SZ")
@@ -193,16 +219,15 @@ def set_canvas_due_dates(canvas_assigments):
 
 
 
-# Specify the path to your Excel file
-excel_file_path = "schedule_ai_spring_24.xlsx"
+
 
 # Call the function to read the Excel file, transform the first column, and collect the 6th column in a tuple
 print("Reading Excel file ...")
-assigments = read_assigments_from_excel(excel_file_path)
+assigments = read_schedule(EXECEL_FILE_PATH)
 pprint(assigments)
-gradescope_assigments, canvas_assigments = gradescope_and_canvas_assigments(assigments)
+gradescope_assigments, canvas_assigments, canvas_modules = gradescope_and_canvas_assigments(assigments)
 # pprint(gradescope_assigments)
-set_canvas_due_dates(canvas_assigments)
+set_canvas_due_dates(canvas_assigments, canvas_modules)
 # set_gradescope_due_dates("659956", assigments)
 # print("DONE")
 
