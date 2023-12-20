@@ -111,4 +111,4 @@ venv.bak/
 # mypy
 .mypy_cache/
 # passwors on it
-main.py 
+# main.py 
