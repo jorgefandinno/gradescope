@@ -11,40 +11,6 @@ class Assigment:
     due_date: datetime
     hard_due_date: datetime
     type: Optional[str] = None
-
-    @classmethod
-    def create_project(cls, name, due_date: datetime):
-        due_date = due_date.replace(**ASSIGMENTS_DUE_TIME) + timedelta(days=ASSIGMENTS_WEEK_DAY)
-        return cls(
-            name=name,
-            release_date=RELEaSE_DATE,
-            due_date=due_date,
-            hard_due_date=due_date + timedelta(days=PROJECT_SLIP_DAYS),
-            type="Project",
-        )
-    
-    @classmethod
-    def create_homework(cls, name, due_date: datetime, type: Optional[str] = None):
-        due_date = due_date.replace(**ASSIGMENTS_DUE_TIME) + timedelta(days=ASSIGMENTS_WEEK_DAY)
-        return cls(
-            name=name,
-            release_date=RELEaSE_DATE,
-            due_date=due_date,
-            hard_due_date=due_date,
-            type=type,
-        )
-
-    @classmethod
-    def create_exam(cls, name, due_date: datetime):
-        release_date = due_date.replace(**MIDTERM_AVALIABLE_TIME)
-        due_date = release_date + MIDTERM_LENGHT
-        return cls(
-            name=name,
-            release_date=release_date,
-            due_date=due_date,
-            hard_due_date=due_date,
-            type="Midterm",
-        )
     
     @classmethod
     def create_module(cls, name, date: datetime):
