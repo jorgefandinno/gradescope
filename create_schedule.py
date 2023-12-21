@@ -23,9 +23,9 @@ LIST_OF_HOLIDAYS = [
 ]
 
 EXAMS = {
-    datetime(YEAR, 3, 6) : "Midterm 1",
-    datetime(YEAR, 4, 17) : "Midterm 2",
-    datetime(YEAR, 5,  8) : "Midterm 3",
+    datetime(YEAR, 3, 6) : "Midterm I",
+    datetime(YEAR, 4, 17) : "Midterm II",
+    datetime(YEAR, 5,  8) : "Midterm III",
 }
 
 
@@ -67,15 +67,18 @@ def read_old_schedule(excel_file_path):
     topic_cells = []
     topics = []
     assigments = []
-    for row in sheet.iter_rows(min_row=1, max_row=sheet.max_row):
+    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row):
         topic_cells.append(row[2])
         topic_cells.append(row[5])
         if row[0].value is not None:
-            assigments.append((row[6].value, row[7].value, row[8].value))
+            row_6 = row[6].value if len(row) > 6 else None
+            row_7 = row[7].value if len(row) > 7 else None
+            row_8 = row[8].value if len(row) > 8 else None
+            assigments.append((row_6, row_7, row_8))
 
     for cell in topic_cells:
         content = cell.value
-        fill_color = cell.font.color.rgb
+        fill_color = cell.font.color.rgb if cell.font.color is not None else None
         if content is not None and not content.strip().lower().startswith("recap") and fill_color != "FFFF0000":
             topics.append(content)
 

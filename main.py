@@ -36,6 +36,20 @@ ai_course = Course(
 )
 
 # ai_course.read_and_update()
-# ai_course.read_and_download_data()
-ai_course.read_and_download_canvas()
-ai_course.update_canvas()
+
+pl_course = Course(
+    name="Programming Languages",
+    midterm_time={ "hour": 15, "minute": 00 },
+    assiments_release_date=START_DATE,
+    excel_file_path="schedule_pl_spring_2024.xlsx",
+    midterm_length = timedelta(hours=1, minutes=15),
+    project_slip_days = 2,
+    homework_slip_days = 0,
+    canvas_course = canvas.get_course("75929"),
+    gradescope_course_id = None,
+    assigments_due_time = { "hour": 23, "minute": 59 },
+    assigments_week_day = 2,
+)
+
+# pl_course.read_and_download_all()
+pl_course.read_and_update()
