@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Any, Optional
+from pprint import pprint
 import gradescope
 from datetime import datetime, timedelta
 
@@ -80,14 +81,54 @@ class CanvasAssigment:
     name: str
     assigment: Assigment
     canvas_object: Any = field(repr=False)
+    only_sections: Optional[list[str]] = None
+    ignore_release_date: bool = False
 
     def update_canvas(self) -> None:
         print(f"Updating '{self.name}' in Canvas ...")
-        self.canvas_object.edit(assignment= {
-            "unlock_at": self.assigment.release_date,
-            "due_at": self.assigment.due_date,
-            "lock_at": self.assigment.hard_due_date,
-        })
+        self.canvas_object.edit(
+            assignment = {
+                "unlock_at": self.assigment.release_date if not self.ignore_release_date else None,
+                "due_at": self.assigment.due_date,
+                "lock_at": self.assigment.hard_due_date,
+            }
+        )
+        print(f"{self.only_sections=}")
+        if self.only_sections:
+            print(f"Updating sections '{self.name}' in Canvas ...")
+            existing_overrides_ids = { o.course_section_id : o for o in self.canvas_object.get_overrides() }
+            print("\n\n","|".join(repr(o) for o in self.canvas_object.get_overrides()))
+            pprint(existing_overrides_ids)
+            pprint(self.only_sections)
+            print(f"{self.ignore_release_date=}")
+            for section_id in self.only_sections:
+                if section_id in existing_overrides_ids:
+                    existing_overrides_ids[section_id].edit(
+                        assignment_override = {
+                            "unlock_at": self.assigment.release_date if not self.ignore_release_date else None,
+                            "due_at": self.assigment.due_date,
+                            "lock_at": self.assigment.hard_due_date,
+                        }
+                    )
+                else:
+                    self.canvas_object.create_override(
+                        assignment_override={
+                            'course_section_id': section_id,
+                            "unlock_at": self.assigment.release_date if not self.ignore_release_date else None,
+                            "due_at": self.assigment.due_date,
+                            "lock_at": self.assigment.hard_due_date,
+                        }
+                    )
+            self.canvas_object.edit(
+                assignment = {
+                    "only_visible_to_overrides": True,
+                }
+            )
+            # pprint(existing_overrides)
+            # for override in existing_overrides:
+            #     print(f"{override=}")
+            #     override.delete()
+            
 
 @dataclass
 class CanvasModule:
