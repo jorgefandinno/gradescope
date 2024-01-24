@@ -93,14 +93,14 @@ class CanvasAssigment:
                 "lock_at": self.assigment.hard_due_date,
             }
         )
-        print(f"{self.only_sections=}")
+        # print(f"{self.only_sections=}")
         if self.only_sections:
             print(f"Updating sections '{self.name}' in Canvas ...")
             existing_overrides_ids = { o.course_section_id : o for o in self.canvas_object.get_overrides() }
-            print("\n\n","|".join(repr(o) for o in self.canvas_object.get_overrides()))
-            pprint(existing_overrides_ids)
-            pprint(self.only_sections)
-            print(f"{self.ignore_release_date=}")
+            # print("\n\n","|".join(repr(o) for o in self.canvas_object.get_overrides()))
+            # pprint(existing_overrides_ids)
+            # pprint(self.only_sections)
+            # print(f"{self.ignore_release_date=}")
             for section_id in self.only_sections:
                 if section_id in existing_overrides_ids:
                     existing_overrides_ids[section_id].edit(

@@ -112,7 +112,9 @@ class Course:
         readings_count = 1
         self.canvas_assigments = []
         print(f"Retriving assigments in Canvas for course {self.canvas_course.name} ...")
+
         for assignment in self.canvas_course.get_assignments():
+            print(assignment.name)
             key = name_to_key(assignment.name)
             if key.startswith("Reading"):
                 key = "RD" + str(readings_count)
@@ -180,5 +182,8 @@ class Course:
 
     def read_and_update(self) -> None:
         self.read_and_download_all()
-        pprint(self.canvas_assigments)
         self.update()
+
+    def read_and_update_canvas(self) -> None:
+        self.read_and_download_canvas()
+        self.update_canvas()

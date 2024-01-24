@@ -14,7 +14,7 @@ from courses import Course
 from assigments import Assigment, GradescopeAssigment, CanvasAssigment, CanvasModule, AssigmentFactory, ExamFactory
 
 API_URL = "https://unomaha.instructure.com/"
-ACCESS_TOKEN = "9322~cqTpj8aMXoQIsnFcqp7kvtGMGuGRR9f8Q3fSeW7RBwv63ZMwIkt60nTVEHJlYdlf"
+ACCESS_TOKEN = "9322~1uwKH80flFtxxG6PeXCQwlfwIa1EEMXMysrqTqGATqoKhlraa3bh2ZBcuuNfhk5W"
 
 START_DATE = datetime(2024, 1, 21)
 
@@ -51,5 +51,7 @@ pl_course = Course(
     assigments_week_day = 2,
 )
 
+# ai_course.read_and_update_canvas()
+# ai_course.read_and_update()
 # pl_course.read_and_download_all()
 pl_course.read_and_update()
